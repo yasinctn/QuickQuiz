@@ -128,7 +128,7 @@ const QuestionPage = ({ examId }) => {
       score = Math.max(score - 1, 0);
     }
 
-    return score;
+    return score * 10;
   };
 
   if (loading) {

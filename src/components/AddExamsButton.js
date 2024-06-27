@@ -2,6 +2,7 @@ import React from "react";
 import { db } from "../firebase"; 
 import { setDoc, doc } from "firebase/firestore";
 
+//firebase e sınav yüklemek için yazdım
 const addSampleExams = async () => {
   const exams = [
     {

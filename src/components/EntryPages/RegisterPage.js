@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
-import { Button, Checkbox, Form, Input, Spin } from 'antd';
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { db } from "../../firebase";
+import { setDoc, doc } from "firebase/firestore";
+import { Button, Form, Input, Checkbox } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { app } from "../../firebase";
 import AlertView from '../AlertView';
 
-
-const Login = () => {
+const Register = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
@@ -14,18 +14,24 @@ const Login = () => {
 
   const onFinish = async (values) => {
     setLoading(true);
-    const auth = getAuth(app);
+    const auth = getAuth();
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
+      const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
       const user = userCredential.user;
 
+      
+      await setDoc(doc(db, 'users', user.uid), {
+        email: user.email,
+        exams: []
+      });
+
       setError(null);
-      setSuccess("Hoşgeldiniz");
-      console.log('User signed in:', user);
+      setSuccess("Kayıt başarılı, hoşgeldiniz!");
+      console.log('User registered:', user);
       navigate('/');
     } catch (error) {
       setError(error.message);
-      console.error('Error signing in:', error);
+      console.error('Error registering user:', error);
     } finally {
       setLoading(false);
     }
@@ -35,15 +41,11 @@ const Login = () => {
     setError('Form submission failed. Please check the fields and try again.');
     console.log('Failed:', errorInfo);
   };
-  
-  if (loading) {
-    return <Spin size="large" style={{ display: 'block', margin: 'auto' }} />;
-  }
 
   return (
-    <div >
+    <div>
       <Form
-        name="login"
+        name="register"
         labelCol={{ span: 8 }}
         wrapperCol={{ span: 10 }}
         initialValues={{ remember: true }}
@@ -76,16 +78,10 @@ const Login = () => {
         >
           <Checkbox>Remember me</Checkbox>
         </Form.Item>
-        <Form.Item wrapperCol={{ offset: 8, span: 16, }}>
+        <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
           <Button type="primary" htmlType="submit" loading={loading}>
-            Login
+            Kaydol
           </Button>
-          <Button
-              type="primary"
-              onClick={() => navigate('/register')}
-            >
-              Kayıt Ol
-            </Button>
         </Form.Item>
       </Form>
       {error && 
@@ -97,7 +93,7 @@ const Login = () => {
       {success &&
         <AlertView
           type='success'
-          title='Giriş Başarılı'
+          title='Kayıt Başarılı'
           description={success}
         />
       }
@@ -105,4 +101,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Register;

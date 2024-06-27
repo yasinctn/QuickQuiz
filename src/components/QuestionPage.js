@@ -112,23 +112,23 @@ const QuestionPage = ({ examId }) => {
   };
 
   const calculateScore = (answers) => {
-    let score = 0;
+    let correctAnswersCount = 0;
     let wrongAnswersCount = 0;
-
+  
     answers.forEach((answer, index) => {
       if (answer.answer === questions[index].correctOption) {
-        score += 1;
+        correctAnswersCount += 1;
       } else {
         wrongAnswersCount += 1;
       }
     });
-
-    // 4 yanlış bir doğru
-    if (wrongAnswersCount >= 4) {
-      score = Math.max(score - 1, 0);
-    }
-
-    return score * 10;
+  
+    const penalties = Math.floor(wrongAnswersCount / 4);
+    const finalCorrectAnswers = correctAnswersCount - penalties;
+  
+    const score = (finalCorrectAnswers / questions.length) * 100;
+  
+    return Math.max(score, 0); 
   };
 
   if (loading) {

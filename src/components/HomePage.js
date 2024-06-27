@@ -1,40 +1,31 @@
 import React, { useState } from "react";
-import { Layout, Menu, Button, Typography, Input, Space, theme } from 'antd';
+import { Layout, Menu, Button, theme } from 'antd';
 import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   UserOutlined,
+  FileTextOutlined,
   SettingOutlined,
   LogoutOutlined,
   ProfileOutlined,
 } from '@ant-design/icons';
 import { useNavigate, Outlet } from 'react-router-dom';
 import { auth } from "../firebase";
+import { useAuthState } from 'react-firebase-hooks/auth';
 
 const { Header, Sider, Content } = Layout;
-const { Title } = Typography;
+
 
 const HomePage = () => {
   const [collapsed, setCollapsed] = useState(false);
-  const [examStarted, setExamStarted] = useState(false);
   const [selectedMenu, setSelectedMenu] = useState('exam');
+  const [user] = useAuthState(auth);
   const navigate = useNavigate();
-  
+
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
 
-  const onChange = (text) => {
-    console.log('onChange:', text);
-  };
-
-  const sharedProps = {
-    onChange,
-  };
-
-  const startExam = () => {
-    setExamStarted(true);
-  };
 
   const handleMenuClick = (e) => {
     if (e.key === 'logout') {
@@ -57,6 +48,7 @@ const HomePage = () => {
         <Menu
           theme="dark"
           mode="inline"
+          selectedKeys={selectedMenu}
           defaultSelectedKeys={['exam']}
           onClick={handleMenuClick}
           items={[
@@ -73,8 +65,8 @@ const HomePage = () => {
               ],
             },
             {
-              key: 'exam',
-              icon: <SettingOutlined />,
+              key: 'quiz',
+              icon: <FileTextOutlined />,
               label: 'Exam',
             },
             {
@@ -109,13 +101,19 @@ const HomePage = () => {
               height: 64,
             }}
           />
-          <Button
-            type="primary"
-            style={{ float: 'right', marginRight: '16px' }}
-            onClick={() => navigate('/login')}
-          >
-            Giriş Yap
-          </Button>
+          {user ? (
+            <div style={{ float: 'right', marginRight: '16px' }}>
+              {user.email}
+            </div>
+          ) : (
+            <Button
+              type="primary"
+              style={{ float: 'right', marginRight: '16px' }}
+              onClick={() => navigate('/login')}
+            >
+              Giriş Yap
+            </Button>
+          )}
         </Header>
         <Content
           style={{

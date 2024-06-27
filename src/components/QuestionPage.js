@@ -1,21 +1,30 @@
 import React, { useState, useEffect } from "react";
 import { Progress, Button, Typography, Radio, Space } from "antd";
 import { db } from "../firebase";
+import { doc, getDoc, updateDoc, arrayUnion } from "firebase/firestore";
+import { getAuth } from 'firebase/auth';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { useNavigate } from 'react-router-dom';
+
 const { Title } = Typography;
 
-const QuestionPage = ({ examId = "0GK101" }) => {
+const QuestionPage = ({ examId }) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
   const [progress, setProgress] = useState(0);
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [user] = useAuthState(getAuth());
+  const [userAnswers, setUserAnswers] = useState([]);
+  const [hasTakenExam, setHasTakenExam] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const examDoc = await db.collection('Exams').doc(examId).get();
-        if (examDoc.exists) {
+        const examDoc = await getDoc(doc(db, 'Exams', examId));
+        if (examDoc.exists()) {
           setQuestions(examDoc.data().questions);
         } else {
           throw new Error("Exam does not exist");
@@ -26,29 +35,91 @@ const QuestionPage = ({ examId = "0GK101" }) => {
         setLoading(false);
       }
     };
+
+    const checkUserExam = async () => {
+      if (user) {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          const examTaken = userData.exams.some(exam => exam.examId === examId);
+          setHasTakenExam(examTaken);
+        }
+      }
+    };
+
     fetchQuestions();
-  }, [examId]);
+    checkUserExam();
+  }, [examId, user]);
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setProgress((prev) => (prev < 100 ? prev + 1 : prev));
-    }, 600);
+      setProgress((prev) => {
+        if (prev >= 100) {
+          nextQuestion();
+          return 0;
+        }
+        return prev + 1.67; // 60 saniyede %100'e ulaşmak için
+      });
+    }, 1000); // Her saniye güncelleme
+
     return () => clearInterval(timer);
-  }, []);
+  }, [currentQuestionIndex, selectedOption]);
 
   const nextQuestion = () => {
+    const updatedUserAnswers = [
+      ...userAnswers,
+      { questionId: questions[currentQuestionIndex].id, answer: selectedOption || "" }
+    ];
+    setUserAnswers(updatedUserAnswers);
+    setSelectedOption(null);
+
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
-      setSelectedOption(null);
       setProgress(0);
     } else {
-      console.log("Exam finished!");
-      // Sınav bittiğinde yapılacak işlemler
+      saveResults(updatedUserAnswers);
+      navigate('/myExams');
     }
   };
 
   const onOptionChange = (e) => {
     setSelectedOption(e.target.value);
+  };
+
+  const saveResults = async (finalAnswers) => {
+    const score = calculateScore(finalAnswers);
+    try {
+      await updateDoc(doc(db, 'users', user.uid), {
+        exams: arrayUnion({
+          examId: examId,
+          answers: finalAnswers,
+          score: score,
+          timestamp: new Date()
+        })
+      });
+    } catch (error) {
+      console.error('Error saving results:', error);
+    }
+  };
+
+  const calculateScore = (answers) => {
+    let score = 0;
+    let wrongAnswersCount = 0;
+
+    answers.forEach((answer, index) => {
+      if (answer.answer === questions[index].correctOption) {
+        score += 1;
+      } else {
+        wrongAnswersCount += 1;
+      }
+    });
+
+    // Eğer kullanıcı 4 soruyu yanlış cevaplarsa 1 puan sil
+    if (wrongAnswersCount >= 4) {
+      score = Math.max(score - 1, 0);
+    }
+
+    return score;
   };
 
   if (loading) {
@@ -57,6 +128,10 @@ const QuestionPage = ({ examId = "0GK101" }) => {
 
   if (error) {
     return <div>Error: {error}</div>;
+  }
+
+  if (hasTakenExam) {
+    return <div>You have already taken this exam.</div>;
   }
 
   if (questions.length === 0) {
@@ -77,7 +152,7 @@ const QuestionPage = ({ examId = "0GK101" }) => {
         </Space>
       </Radio.Group>
       <Button type="primary" onClick={nextQuestion} style={{ marginTop: 20 }}>
-        İleri
+        {currentQuestionIndex < questions.length - 1 ? 'Next' : 'Complete'}
       </Button>
     </div>
   );

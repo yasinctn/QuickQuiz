@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { app } from "../../firebase";
 import AlertView from '../AlertView';
 
+
 const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -74,6 +75,13 @@ const Login = () => {
           <Button type="primary" htmlType="submit" loading={loading}>
             Login
           </Button>
+          <Button
+              type="primary"
+              
+              onClick={() => navigate('/register')}
+            >
+              Kayıt Ol
+            </Button>
         </Form.Item>
       </Form>
       {error && 

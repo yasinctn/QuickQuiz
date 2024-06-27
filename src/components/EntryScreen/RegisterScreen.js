@@ -19,7 +19,7 @@ const Register = () => {
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
       const user = userCredential.user;
 
-      // Kullanıcıyı Firestore'a kaydet
+      
       await setDoc(doc(db, 'users', user.uid), {
         email: user.email,
         exams: []

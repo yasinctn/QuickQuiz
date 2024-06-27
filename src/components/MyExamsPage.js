@@ -3,7 +3,7 @@ import { Card, List, Spin, Typography } from 'antd';
 import { db } from '../firebase';
 import { getAuth } from 'firebase/auth';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { collection, doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 
 
 const { Title } = Typography;

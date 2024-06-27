@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
-import { Button, Checkbox, Form, Input } from 'antd';
+import { Button, Checkbox, Form, Input, Spin } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { app } from "../../firebase";
 import AlertView from '../AlertView';
@@ -18,6 +18,7 @@ const Login = () => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
       const user = userCredential.user;
+
       setError(null);
       setSuccess("Hoşgeldiniz");
       console.log('User signed in:', user);
@@ -34,9 +35,13 @@ const Login = () => {
     setError('Form submission failed. Please check the fields and try again.');
     console.log('Failed:', errorInfo);
   };
+  
+  if (loading) {
+    return <Spin size="large" style={{ display: 'block', margin: 'auto' }} />;
+  }
 
   return (
-    <div>
+    <div >
       <Form
         name="login"
         labelCol={{ span: 8 }}
@@ -71,13 +76,12 @@ const Login = () => {
         >
           <Checkbox>Remember me</Checkbox>
         </Form.Item>
-        <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+        <Form.Item wrapperCol={{ offset: 8, span: 16, }}>
           <Button type="primary" htmlType="submit" loading={loading}>
             Login
           </Button>
           <Button
               type="primary"
-              
               onClick={() => navigate('/register')}
             >
               Kayıt Ol

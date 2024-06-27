@@ -2,15 +2,13 @@ import React from 'react';
 import { Alert, Space } from 'antd';
 
 
-const AlertView = ({type = "success", title="am", description = "parolanız 6 haneden kısa olamaz"}) => (
+const AlertView = ({type , title, description}) => (
   <Space
     direction="vertical"
     style={{
       width: '100%',
     }}
-    align='center'
-    
-  >
+    align='center'>
     
     <Alert
       message={title}

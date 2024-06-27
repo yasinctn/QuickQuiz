@@ -17,10 +17,3 @@ class Question {
     }
 }
 
-const QuestionConverter = {
-    
-    fromFirestore: (snapshot, options) => {
-        const data = snapshot.data(options);
-        return new Question(data.id, data.question, data.options, data.correctOption);
-    }
-};

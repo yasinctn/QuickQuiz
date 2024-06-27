@@ -1,43 +1,73 @@
 import React from "react";
-import { db } from "../firebase"; // Firebase yapılandırma dosyanızı import edin
+import { db } from "../firebase"; 
 import { setDoc, doc } from "firebase/firestore";
 
 const addSampleExams = async () => {
   const exams = [
     {
-      examId: "GE101",
-      questions: [
+      "examId": "GE101",
+      "questions": [
         {
           id: "q1",
-          question: "Which is the largest continent?",
-          options: ["Asia", "Africa", "Europe", "Australia"],
-          correctOption: "Asia"
+          question: "En büyük kıta hangisidir?",
+          options: ["Asya", "Afrika", "Avrupa", "Avustralya"],
+          correctOption: "Asya"
         },
         {
           id: "q2",
-          question: "What is the capital of Australia?",
-          options: ["Sydney", "Canberra", "Melbourne", "Brisbane"],
+          question: "Avustralya'nın başkenti neresidir?",
+          options: ["Sidney", "Canberra", "Melbourne", "Brisbane"],
           correctOption: "Canberra"
         },
         {
           id: "q3",
-          question: "Which is the longest river in the world?",
-          options: ["Nile", "Amazon", "Yangtze", "Mississippi"],
-          correctOption: "Nile"
+          question: "Dünyanın en uzun nehri hangisidir?",
+          options: ["Nil", "Amazon", "Yangtze", "Mississippi"],
+          correctOption: "Nil"
         },
         {
           id: "q4",
-          question: "Which country has the largest population?",
-          options: ["China", "India", "USA", "Indonesia"],
-          correctOption: "China"
+          question: "En kalabalık ülke hangisidir?",
+          options: ["Çin", "Hindistan", "ABD", "Endonezya"],
+          correctOption: "Çin"
         },
         {
           id: "q5",
-          question: "Which is the smallest country by area?",
-          options: ["Vatican City", "Monaco", "San Marino", "Liechtenstein"],
-          correctOption: "Vatican City"
+          question: "Yüzölçümü bakımından en küçük ülke hangisidir?",
+          options: ["Vatikan", "Monako", "San Marino", "Lihtenştayn"],
+          correctOption: "Vatikan"
         },
-      ],
+        {
+          id: "q6",
+          question: "Dünyanın en yüksek dağı hangisidir?",
+          options: ["Everest", "K2", "Kangchenjunga", "Lhotse"],
+          correctOption: "Everest"
+        },
+        {
+          id: "q7",
+          question: "ABD'nin ilk başkanı kimdir?",
+          options: ["George Washington", "Thomas Jefferson", "Abraham Lincoln", "John Adams"],
+          correctOption: "George Washington"
+        },
+        {
+          id: "q8",
+          question: "En büyük okyanus hangisidir?",
+          options: ["Pasifik", "Atlantik", "Hint", "Arktik"],
+          correctOption: "Pasifik"
+        },
+        {
+          id: "q9",
+          question: "Dünyanın en büyük çölü hangisidir?",
+          options: ["Sahra", "Gobi", "Arabistan", "Kalahari"],
+          correctOption: "Sahra"
+        },
+        {
+          id: "q10",
+          question: "Mona Lisa tablosunun sanatçısı kimdir?",
+          options: ["Leonardo da Vinci", "Michelangelo", "Raphael", "Donatello"],
+          correctOption: "Leonardo da Vinci"
+        }
+      ]
     },
     {
       examId: "LG101",

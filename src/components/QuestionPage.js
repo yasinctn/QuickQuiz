@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Progress, Button, Typography, Radio, Space } from "antd";
+import React, { useState, useEffect, useCallback } from "react";
+import { Progress, Button, Typography, Radio, Space, Spin } from "antd";
 import { db } from "../firebase";
 import { doc, getDoc, updateDoc, arrayUnion } from "firebase/firestore";
 import { getAuth } from 'firebase/auth';
@@ -19,6 +19,7 @@ const QuestionPage = ({ examId }) => {
   const [userAnswers, setUserAnswers] = useState([]);
   const [hasTakenExam, setHasTakenExam] = useState(false);
   const navigate = useNavigate();
+  const [remainingTime, setRemainingTime] = useState(30);
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -46,26 +47,11 @@ const QuestionPage = ({ examId }) => {
         }
       }
     };
-
     fetchQuestions();
     checkUserExam();
   }, [examId, user]);
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          nextQuestion();
-          return 0;
-        }
-        return prev + 1.67; // 60 saniyede %100'e ulaşmak için
-      });
-    }, 1000); // Her saniye güncelleme
-
-    return () => clearInterval(timer);
-  }, [currentQuestionIndex, selectedOption]);
-
-  const nextQuestion = () => {
+  const nextQuestion = useCallback(() => {
     const updatedUserAnswers = [
       ...userAnswers,
       { questionId: questions[currentQuestionIndex].id, answer: selectedOption || "" }
@@ -76,11 +62,34 @@ const QuestionPage = ({ examId }) => {
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setProgress(0);
+      setRemainingTime(30);
     } else {
       saveResults(updatedUserAnswers);
       navigate('/myExams');
     }
-  };
+  }, [currentQuestionIndex, questions, selectedOption, userAnswers, navigate]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 100) {
+          nextQuestion();
+          return 0;
+        }
+        return prev + 3.33; 
+      });
+
+      setRemainingTime((prev) => {
+        if (prev <= 1) {
+          nextQuestion();
+          return 30;
+        }
+        return prev - 1;
+      });
+    }, 1000); 
+
+    return () => clearInterval(timer);
+  }, [currentQuestionIndex, selectedOption, nextQuestion]);
 
   const onOptionChange = (e) => {
     setSelectedOption(e.target.value);
@@ -114,7 +123,7 @@ const QuestionPage = ({ examId }) => {
       }
     });
 
-    // Eğer kullanıcı 4 soruyu yanlış cevaplarsa 1 puan sil
+    // 4 yanlış bir doğru
     if (wrongAnswersCount >= 4) {
       score = Math.max(score - 1, 0);
     }
@@ -123,7 +132,7 @@ const QuestionPage = ({ examId }) => {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <Spin size="large" style={{ display: 'block', margin: 'auto' }} />;
   }
 
   if (error) {
@@ -140,8 +149,12 @@ const QuestionPage = ({ examId }) => {
 
   return (
     <div>
-      <Progress percent={progress} status="active" />
-      <Title level={4}>{questions[currentQuestionIndex].question}</Title>
+      <div style={{ textAlign: 'center', marginBottom: 20 }}>
+        <Title level={4}>{`Time remaining: ${remainingTime} seconds`}</Title>
+        <Progress  percent={progress} status="success" />
+      </div>
+      <div>
+        <Title level={4}>{questions[currentQuestionIndex].question}</Title>
       <Radio.Group onChange={onOptionChange} value={selectedOption}>
         <Space direction="vertical">
           {questions[currentQuestionIndex].options.map((option, index) => (
@@ -151,6 +164,7 @@ const QuestionPage = ({ examId }) => {
           ))}
         </Space>
       </Radio.Group>
+      </div>
       <Button type="primary" onClick={nextQuestion} style={{ marginTop: 20 }}>
         {currentQuestionIndex < questions.length - 1 ? 'Next' : 'Complete'}
       </Button>

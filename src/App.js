@@ -1,15 +1,14 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { getAuth } from 'firebase/auth';
+import { Spin } from "antd";
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { app } from './firebase'; // Firebase config dosyanızı import edin
+import { app } from './firebase'; 
 import Login from './components/EntryScreen/LoginScreen';
 import Register from './components/EntryScreen/RegisterScreen';
 import HomePage from './components/HomePage';
-import QuizScreen from
-
- './components/QuizScreen';
-import MyExamsPage from './components/MyExamsPage';  // Yeni ekledik
+import QuizScreen from './components/QuizScreen';
+import MyExamsPage from './components/MyExamsPage';
 
 const auth = getAuth(app);
 
@@ -21,10 +20,10 @@ const PrivateRoute = ({ user, children }) => {
 };
 
 const App = () => {
-  const [user, loading, error] = useAuthState(auth);
+  const [user, loading] = useAuthState(auth);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <Spin size="large" style={{ display: 'block', margin: 'auto' }} />;
   }
 
   return (
